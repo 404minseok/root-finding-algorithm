@@ -1,4 +1,4 @@
-function [root,ea,iter]=bisect(func,xl,xu,es,maxit,varargin)
+function [root,ea,iter]=bisection_method(func,xl,xu,es,maxit,varargin)
 % bisect: root location zeroes
 % [root,ea,iter]=bisect(func,xl,xu,es,maxit,p1,p2,...):
 % uses bisection method to find the root of func
