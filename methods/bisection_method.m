@@ -1,36 +1,63 @@
-function [root,ea,iter]=bisection_method(func,xl,xu,es,maxit,varargin)
-% bisect: root location zeroes
-% [root,ea,iter]=bisect(func,xl,xu,es,maxit,p1,p2,...):
-% uses bisection method to find the root of func
-% input:
-% func = name of function
-% xl, xu = lower and upper guesses
-% es = desired relative error (default = 0.0001%)
-% maxit = maximum allowable iterations (default = 50)
-% p1,p2,... = additional parameters used by func
-% output:
-% root = approximate root from the last iteration
-% ea = approximate relative error (%)
-% iter = number of iterations
-if nargin<3,error('at least 3 input arguments required'),end
-test = func(xl,varargin{:})*func(xu,varargin{:});
-if test>0,error('no sign change'),end
-if nargin<4 || isempty(es), es=0.0001;end
-if nargin<5 || isempty(maxit), maxit=50;end
-iter = 0; xr = xl; 
-while (1)
-  xrold = xr;
-  xr = (xl + xu)/2; %approximate root at the current interval
-  iter = iter + 1;
-  if xr ~= 0,ea = abs((xr - xrold)/xr) * 100;end
-  test = func(xl,varargin{:})*func(xr,varargin{:});  % [xl  xr   xu]
- if test < 0                                         % [xl  xr]
-    xu = xr;
-  elseif test > 0                                           %[xr  xu]
-    xl = xr;
-  else
-    ea = 0;
- end
-  if ea <= es || iter >= maxit,break,end
+function [root, error_bound]=bisect(a0,b0,ep,max_iterate)
+
+% For the given function f(x), an example of a calling sequence 
+% might be the following:
+%    [root, error_bound]= bisect(1,1.5,1.0E-6,10)
+% 
+%
+% The following will print out for each iteration the values of
+%      count, a, b, c, f(c), (b-a)/2
+% with c the current iterate and (b-a)/2 the error bound for c.
+% The variable count is the index of the current interate.  Tap 
+% the carriage return to continue with the iteration. 
+
+if a0 >= b0
+    disp('a0 < b0 is not true.  Stop!')
+    return
 end
-root = xr; fx = func(xr, varargin{:});
+
+format short e
+a = a0; b = b0; %Set initial interval from the input
+fa = f(a); fb = f(b); %evaluate f(x) at a and b
+                      %store them at the variables fa and fb
+
+if sign(fa)*sign(fb) > 0
+    disp('f(a0) and f(b0) are of the same sign.  Stop!')
+    return
+end
+
+c = (a+b)/2;
+it_count = 0;
+fprintf('\n it_count   a          b          c          f(c)         b-c\n')
+fprintf('___________________________________________________________________\n')
+while (b-c > ep) && (it_count < max_iterate)
+    it_count = it_count + 1; %incrase iteration
+    fc = f(c); %evaluate f(x) at c and store it at fc
+    fprintf('\n %5d %10.4f %10.4f %10.8f %10.8e %10.8f\n',it_count,a,b,c,fc,b-c)
+    if sign(fb)*sign(fc) <= 0
+        a = c;
+        fa = fc; 
+    else
+        b = c;
+        fb = fc;
+    end
+    c=(a+b)/2; %set midpoint for the new interval
+  
+end
+fprintf('___________________________________________________________________\n')
+format long
+root = c
+format short e
+error_bound = b-c
+format short
+it_count
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function value = f(x)
+
+% function to define equation for rootfinding problem.   
+value = x.^6 - x - 1;
+
+end
